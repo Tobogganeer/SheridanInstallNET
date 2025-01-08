@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
-using static SheridanInstallNET.Keyboard;
+using System.IO;
+using System.Security.Cryptography;
 
 namespace SheridanInstallNET
 {
