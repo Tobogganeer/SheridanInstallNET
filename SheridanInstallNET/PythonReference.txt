@@ -1,0 +1,340 @@
+# Quick Sheridan sign-in
+# Created by (a very frustrated) Sheridan student
+
+
+# ========== SETUP ========== #
+#
+#   1. Edit Install.py to set which email you use for Visual Studio (TODO: Allow for no email)
+#   2. Run PasswordCreator.py to create your encrypted passwords file
+#   3. Save the zip someone like OneDrive or Google Drive where you can download it later
+#
+
+# ========== HOW TO USE ========== #
+#
+#   1. Set Google Chrome as the default browser (TODO: set it automatically later?)
+#   2. Download your uploaded files from wherever you put them
+#   2. Use run.bat to run the program
+#   3. Input your master password
+#   4. Input 2FA codes as asked after setup is complete
+#
+
+
+import time
+import pyautogui as pg
+import base64
+import os
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from getpass import getpass
+
+
+
+usePasswordCreator = True # If you don't want to/don't trust the password encryption, you can enter everything manually
+useSheridanEmailForVisualStudio = False # I use my personal email for Visual Studio
+
+
+if usePasswordCreator:
+    # Get path to script file
+    path = os.path.abspath(os.path.dirname(__file__))
+
+    if not os.path.exists(path + "/salt") or not os.path.exists(path + "/db"):
+        print("Missing password database - running password creator")
+        import PasswordCreator as pw
+        pw.run() # Run password creator
+
+    print("=== Sheridan Install/Login ===")
+
+    password = getpass("Master Password: ").encode()
+
+
+    with open(path + "/salt", "rb") as file:
+        salt = file.read()
+
+    try:
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=480000,
+        )
+        key = base64.urlsafe_b64encode(kdf.derive(password))
+        f = Fernet(key)
+
+        #using2FA = True
+
+        def read(db) -> str:
+            # Read the length, use that to read the bytes, decrypt, then convert to string
+            return f.decrypt(db.read(int.from_bytes(db.read(1)))).decode()
+
+        # Read in all encrypted data
+        with open(path + "/db", "rb") as readDB:
+            slateEmail = read(readDB)
+            githubEmail = read(readDB)
+            visualStudioEmail = read(readDB)
+            unityEmail = read(readDB)
+            miroEmail = read(readDB)
+
+            slatePass = read(readDB)
+            githubPass = read(readDB)
+            visualStudioPass = read(readDB)
+            unityPass = read(readDB)
+            miroPass = read(readDB)
+    except:
+        print("Reading database failed - corrupted data or incorrect password?")
+        print("Input data manually...")
+        slateEmail = input("\nSlate Email: ")
+        githubEmail = input("Github Email: ")
+        visualStudioEmail = input("Visual Studio Email: ")
+        unityEmail = input("Unity Email: ")
+        miroEmail = input("Miro Email: ")
+
+        print("\n(Can't see passwords as you type)")
+        slatePass = getpass("Slate Password: ")
+        githubPass = getpass("Github Password: ")
+        visualStudioPass = getpass("Visual Studio Password: ")
+        unityPass = getpass("Unity Password: ")
+        miroPass = getpass("Miro Password: ")
+
+    print("Read in data - is this the correct email for slate (y/n)?")
+    print(slateEmail)
+
+    if input().lower() != "y":
+        print("Potential password database corruption - please run PasswordCreator.py to remake them")
+        exit()
+
+else: # No PasswordCreator
+    print("Input data...")
+    slateEmail = input("\nSlate Email: ")
+    githubEmail = input("Github Email: ")
+    visualStudioEmail = input("Visual Studio Email: ")
+    unityEmail = input("Unity Email: ")
+    miroEmail = input("Miro Email: ")
+
+    print("\n(Can't see passwords as you type)")
+    slatePass = getpass("Slate Password: ")
+    githubPass = getpass("Github Password: ")
+    visualStudioPass = getpass("Visual Studio Password: ")
+    unityPass = getpass("Unity Password: ")
+    miroPass = getpass("Miro Password: ")
+
+
+# Start actual input
+time.sleep(0.1)
+
+def type(comm, delay = 0):
+    pg.write(comm)
+    time.sleep(delay)
+
+def press(key, delay = 0):
+    pg.write([key])
+    time.sleep(delay)
+
+def openProgram(program, delay):
+    press("winleft", 0.5)
+    type(program, 0.5)
+    press("enter", delay)
+
+def tab(count = 1):
+    for i in range(count):
+        press("tab", 0.1)
+
+def enter(delay):
+    press("enter", delay)
+
+def tabEnter(count, delay):
+    tab(count)
+    enter(delay)
+
+def typeEnter(command, delay):
+    type(command, 0.1)
+    enter(delay)
+
+
+#def waitFor2FA(program):
+#    if using2FA:
+#        print("Input 2FA for " + program + ". Press 'Enter' to continue.")
+#        input()
+
+
+# ========== Github Desktop Download ========== #
+openProgram("chrome", 4.0)
+typeEnter("https://central.github.com/deployments/desktop/desktop/latest/win32", 1.0)
+#enter(1.0) # Confirm download
+time.sleep(5.5) # These PCs are fast, take about a second to download
+
+pg.hotkey("winleft", "r") # Open Run dialog
+typeEnter("downloads", 2.0)
+press("up", 0.4) # Highlight file
+press("down", 0.4)
+enter(2.0) # Start setup
+
+#pg.hotkey("ctrl", "w") # Close Explorer
+#time.sleep(1.5)
+#pg.hotkey("ctrl", "w") # Close Chrome
+
+print("Giving Github Desktop time to open...")
+time.sleep(10)
+enter(3.5) # Open login
+
+
+# ========== Github Sign-in ========== #
+type(githubEmail, 0.5)
+tab()
+typeEnter(githubPass, 0.5)
+
+# Wait for 2FA...
+
+
+# ========== SLATE Sign-in ========== #
+pg.hotkey("ctrl", "t") # New tab
+time.sleep(0.5)
+typeEnter("slate.sheridancollege.ca", 3.0)
+tabEnter(2, 2.0) # Navigate to "Sign In"
+
+typeEnter(slateEmail, 2.5) # Email
+typeEnter(slatePass, 1.0) # Pass
+
+# Wait for 2FA...
+
+
+# ========== Visual Studio Sign In ========== #
+openProgram("visual studio 2022", 10.0)
+tabEnter(2, 4.0) # Sign into account
+
+if not useSheridanEmailForVisualStudio:
+    tabEnter(1, 4.5) # Seperate email (not organization)
+    typeEnter(visualStudioEmail, 2.0)
+    typeEnter(visualStudioPass, 1.0)
+
+# Wait for 2FA...
+#waitFor2FA("Sheridan Email" if useSheridanEmailForVisualStudio else "Microsoft Account")
+
+
+# ========== Unity Hub Sign In ========== #
+openProgram("unity hub", 8.0)
+tabEnter(1, 6.0) # Login
+tabEnter(3, 0.3) # Close cookies window
+tab(7) # Navigate to username input
+
+type(unityEmail, 0.5)
+tab()
+type(unityPass, 0.5)
+tabEnter(3, 4.5) # Login button
+tabEnter(2, 1.0) # Redirect to hub
+
+
+# ========== Miro Sign In ========== #
+openProgram("chrome", 3.0)
+typeEnter("miro.com/login", 1.0) # Go to webpage
+#tabEnter(2, 1.0)
+#tab(12) # Navigate back to email field
+
+type(miroEmail, 0.5)
+tab()
+typeEnter(miroPass, 1.0)
+
+print("Everything has been opened - enter necessary 2FA codes and enjoy")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# PASSWORDS
+
+
+
+
+
+
+
+def run():
+    import base64
+    import os
+    from cryptography.fernet import Fernet
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+    password = input("Master Password: ").encode()
+
+    # Get path to script file
+    path = os.path.abspath(os.path.dirname(__file__))
+
+    salt = os.urandom(16)
+    with open(path + "/salt", "wb") as file:
+        file.write(salt)
+
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=480000,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(password))
+    f = Fernet(key)
+
+    def encrypt(prompt: str) -> bytes:
+        return f.encrypt(input(prompt).encode())
+
+    # TROUBLE: Same salt for all values, can detect which passwords/usernames are the same!
+    slateEmail = encrypt("\nSlate Email: ")
+    githubEmail = encrypt("Github Email: ")
+    visualStudioEmail = encrypt("Visual Studio Email: ")
+    unityEmail = encrypt("Unity Email: ")
+    miroEmail = encrypt("Miro Email: ")
+
+    slatePass = encrypt("\nSlate Password: ")
+    githubPass = encrypt("Github Password: ")
+    visualStudioPass = encrypt("Visual Studio Password: ")
+    unityPass = encrypt("Unity Password: ")
+    miroPass = encrypt("Miro Password: ")
+
+    def writePass(pw: bytes, dbFile):
+        dbFile.write(len(pw).to_bytes()) # Only 1 byte
+        dbFile.write(pw)
+
+    with open(path + "/db", "wb") as db:
+        writePass(slateEmail, db)
+        writePass(githubEmail, db)
+        writePass(visualStudioEmail, db)
+        writePass(unityEmail, db)
+        writePass(miroEmail, db)
+
+        writePass(slatePass, db)
+        writePass(githubPass, db)
+        writePass(visualStudioPass, db)
+        writePass(unityPass, db)
+        writePass(miroPass, db)
+
+    print("\nPasswords saved. Upload this entire folder as a zip.")
+
+if __name__ == "__main__":
+    run()
+
+#msg = f.decrypt(token).decode()
+#print(msg)
