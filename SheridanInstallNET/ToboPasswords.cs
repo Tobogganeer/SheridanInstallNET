@@ -16,7 +16,7 @@ namespace ToboPasswords
 
         static readonly string[] NewlineSplit = new string[] { "\n" };
 
-        public static void Main()
+        public static void MainLoop()
         {
             while (!exit)
                 Loop();
