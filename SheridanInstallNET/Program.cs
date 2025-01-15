@@ -24,23 +24,62 @@ namespace SheridanInstallNET
 
         static void MainLoop()
         {
-            ClearAndWriteHeader();
+            ClearAndWriteHeader("Sheridan Install");
 
-            InOut.WriteLine("[1] - Login");
+            InOut.WriteLine("[1] - Login to services");
             InOut.WriteLine("[2] - View/Edit saved information");
             InOut.WriteLine("[3] - Settings");
 
             int selection = InOut.GetSelection(1, 3);
-            InOut.WriteLine(selection);
-            InOut.WaitForInput();
+
+            if (selection == 1)
+                Login();
+            else if (selection == 2)
+                EditInfo();
+            else if (selection == 3)
+                Settings();
         }
 
-        static void ClearAndWriteHeader()
+        static void ClearAndWriteHeader(string title)
         {
             InOut.Clear();
-            InOut.WriteLine("Sheridan Install - Number keys to navigate, escape to go back.");
+            InOut.WriteLine($"{title} - Number keys to navigate, escape to go back.");
             InOut.WriteLine(LoggedIn ? "LOGGED IN" : "NOT LOGGED IN");
             InOut.Space();
+        }
+
+        
+        static void Login()
+        {
+            if (!VerifyLogin())
+                MainLoop();
+
+            ClearAndWriteHeader("Login to services");
+        }
+
+        static void EditInfo()
+        {
+            if (!VerifyLogin())
+                MainLoop();
+
+            ClearAndWriteHeader("Saved Information");
+        }
+
+        static void Settings()
+        {
+            ClearAndWriteHeader("Settings");
+        }
+
+
+        static bool VerifyLogin()
+        {
+            if (LoggedIn)
+                return true;
+
+            ClearAndWriteHeader("Master Password");
+
+            if (!InOut.ReadStringEscapable(out string inputPassword))
+                return false;
         }
     }
 }

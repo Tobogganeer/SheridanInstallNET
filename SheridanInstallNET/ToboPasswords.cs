@@ -16,6 +16,20 @@ namespace ToboPasswords
 
         static readonly string[] NewlineSplit = new string[] { "\n" };
 
+        static byte[] ComputeSha256Hash(string rawData, byte[] salt)
+        {
+            // Create a SHA256
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                byte[] textBytes = Encoding.UTF8.GetBytes(rawData);
+                Array.Resize(ref textBytes, textBytes.Length + salt.Length);
+                Array.Copy(salt, 0, textBytes, textBytes.Length - salt.Length, salt.Length);
+                byte[] bytes = sha256Hash.ComputeHash(textBytes);
+
+                return bytes;
+            }
+        }
+
         public static void MainLoop()
         {
             while (!exit)
