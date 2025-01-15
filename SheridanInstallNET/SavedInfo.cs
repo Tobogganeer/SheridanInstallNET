@@ -16,7 +16,9 @@ namespace SheridanInstallNET
         public readonly byte[] Data;
         public readonly ArraySegment<byte> MasterSalt;
         public readonly ArraySegment<byte> MasterHash;
+
         public readonly Dictionary<string, Entry> Entries;
+        public int CurrentEntryCount => Entries.Count;
 
 
         /// <summary>
@@ -74,6 +76,19 @@ namespace SheridanInstallNET
             }
 
             return true;
+        }
+
+        public void FillEntriesFromData(string masterPassword)
+        {
+            if (!CorrectPassword(masterPassword))
+                return;
+
+            byte numServicesInData = Data[SaltSize + PassHashSize];
+            int currentOffset = 0;
+            for (int i = 0; i < numServicesInData; i++)
+            {
+
+            }
         }
 
 
