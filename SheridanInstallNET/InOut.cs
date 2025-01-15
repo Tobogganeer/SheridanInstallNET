@@ -18,6 +18,26 @@ namespace SheridanInstallNET
             Console.WriteLine(value);
         }
 
+        public static void WriteLine()
+        {
+            Console.WriteLine();
+        }
+
+        public static void WriteLine(int value)
+        {
+            Console.WriteLine(value);
+        }
+
+        public static void WriteLine(float value)
+        {
+            Console.WriteLine(value);
+        }
+
+        public static void WriteLine(bool value)
+        {
+            Console.WriteLine(value);
+        }
+
         public static void Space()
         {
             Console.WriteLine();
@@ -54,6 +74,34 @@ namespace SheridanInstallNET
         {
             Write(prompt ?? "Input a string: ");
             return ReadLine();
+        }
+
+        public static int GetSelection(int min, int max)
+        {
+            while (true)
+            {
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                if (int.TryParse(key.KeyChar.ToString(), out int res) && res >= min && res <= max)
+                    return res;
+            }
+        }
+
+        public static bool GetSelectionEscapable(int min, int max, out int selection)
+        {
+            while (true)
+            {
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                if (int.TryParse(key.KeyChar.ToString(), out int res) && res >= min && res <= max)
+                {
+                    selection = res;
+                    return true;
+                }
+                else if (key.Key == ConsoleKey.Escape)
+                {
+                    selection = 0;
+                    return false;
+                }
+            }
         }
 
         // Return true on successful input, false if user presses escape

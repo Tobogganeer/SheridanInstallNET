@@ -11,12 +11,34 @@ namespace SheridanInstallNET
     public class Program
     {
         public static string RootDirectory { get; private set; }
+        static bool exit = false;
 
         static void Main(string[] args)
         {
             RootDirectory = Directory.GetCurrentDirectory();
-            Console.WriteLine(RootDirectory);
-            Console.ReadKey();
+
+            while (!exit)
+                MainLoop();
+        }
+
+        static void MainLoop()
+        {
+            ClearAndWriteHeader();
+
+            InOut.WriteLine("[1] - Login");
+            InOut.WriteLine("[2] - View/Edit saved information");
+            InOut.WriteLine("[3] - Settings");
+
+            int selection = InOut.GetSelection(1, 3);
+            InOut.WriteLine(selection);
+            InOut.WaitForInput();
+        }
+
+        static void ClearAndWriteHeader()
+        {
+            InOut.Clear();
+            InOut.WriteLine("Sheridan Install - Number keys to navigate, escape to go back.");
+            InOut.Space();
         }
     }
 }
