@@ -21,6 +21,14 @@ namespace SheridanInstallNET
         public static readonly int Iterations = 10000;
         public static readonly int MinPasswordLength = 4;
 
+        public static byte[] CreateSalt(int numBytes)
+        {
+            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+            byte[] buff = new byte[numBytes];
+            rng.GetBytes(buff);
+            return buff;
+        }
+
         public static byte[] ComputeSha256Hash(string rawData, byte[] salt)
         {
             // Create a SHA256

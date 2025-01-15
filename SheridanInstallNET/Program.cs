@@ -90,6 +90,7 @@ namespace SheridanInstallNET
                 {
                     InOut.WriteLine("Master password cannot be empty...");
                     MasterPassword = InOut.ReadPassword();
+                    LoggedIn = true;
                 }
             }
             // Otherwise, read it and make sure it is correct.
