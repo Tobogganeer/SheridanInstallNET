@@ -143,6 +143,32 @@ namespace SheridanInstallNET
             }
         }
 
+        public static string ReadPassword()
+        {
+            // https://stackoverflow.com/questions/3404421/password-masking-console-application
+            string pass = string.Empty;
+            ConsoleKey key;
+            do
+            {
+                var keyInfo = Console.ReadKey(intercept: true);
+                key = keyInfo.Key;
+
+                if (key == ConsoleKey.Backspace && pass.Length > 0)
+                {
+                    Console.Write("\b \b");
+                    pass = pass.Substring(0, pass.Length - 1);
+                }
+                else if (!char.IsControl(keyInfo.KeyChar))
+                {
+                    Console.Write("*");
+                    pass += keyInfo.KeyChar;
+                }
+            } while (key != ConsoleKey.Enter);
+
+            Console.WriteLine();
+            return pass;
+        }
+
         public static bool ReadStringEscapablePredicate(out string output,
             Predicate<string> condition, string optionsText)
         {

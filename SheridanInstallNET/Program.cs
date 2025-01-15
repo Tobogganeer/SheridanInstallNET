@@ -14,6 +14,9 @@ namespace SheridanInstallNET
         static bool Exit = false;
         static bool LoggedIn = false;
 
+        public static string MasterPassword { get; private set; }
+        public static SavedInfo CurrentInfo { get; private set; }
+
         static void Main(string[] args)
         {
             RootDirectory = Directory.GetCurrentDirectory();
@@ -77,6 +80,23 @@ namespace SheridanInstallNET
                 return true;
 
             ClearAndWriteHeader("Master Password");
+
+            // If this is the first boot, create a password
+            if (!SavedInfo.Exists())
+            {
+                InOut.WriteLine("No saved data located. Please choose a master password:");
+                MasterPassword = InOut.ReadPassword();
+                while (string.IsNullOrEmpty(MasterPassword))
+                {
+                    InOut.WriteLine("Master password cannot be empty...");
+                    MasterPassword = InOut.ReadPassword();
+                }
+            }
+            // Otherwise, read it and make sure it is correct.
+            else
+            {
+
+            }
 
             if (!InOut.ReadStringEscapable(out string inputPassword))
                 return false;
