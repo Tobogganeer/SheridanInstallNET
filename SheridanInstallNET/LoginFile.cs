@@ -20,41 +20,6 @@ namespace SheridanInstallNET
         private static readonly string CategoryKey = "Category";
         private static readonly string OrderKey = "Order";
 
-        private static readonly string BlankFile = @"
-### Config
-# Category is used to group files for easy enabling/disabling
-Category=
-# Lower orders are loaded first
-Order=
-
-
-
-# Commands go here...
-goto slate.sheridancollege.ca
-ctrl t
-typeenter hi :3
-
-
-
-### Commands
-# type [text] - types the given text
-# typeenter [text] - types and then hits enter
-# enter - hits enter
-# tab - hits tab (useful for navigating between controls)
-# tab [amount] - hits tab a bunch of times
-# tabenter - hits tab and then enter
-
-# open [program] - opens the given program
-# wait [seconds] - delays operation for the given amount of time
-# goto [url] - opens Google and goes to that URL
-
-# win [key] - presses window key + key
-# ctrl [key] - presses ctrl + key
-# shift [key] - presses shift + key
-# up - presses up arrow key
-# down - presses down arrow key
-";
-
 
         public LoginFile(string[] lines, string path)
         {
@@ -99,14 +64,14 @@ typeenter hi :3
             return files;
         }
 
-        public static void CreateEmpty(string directory, string name)
+        public static void Create(string directory, string name, string contents)
         {
             directory = Path.Combine(Program.RootDirectory, directory);
 
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-            File.WriteAllText(Path.Combine(directory, name + "." + Extension), BlankFile);
+            File.WriteAllText(Path.Combine(directory, name + "." + Extension), contents);
         }
     }
 

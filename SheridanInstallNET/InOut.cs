@@ -76,17 +76,21 @@ namespace SheridanInstallNET
             return ReadLine();
         }
 
-        public static int GetSelection(int min, int max)
+        public static int GetSelection(int min, int max, bool enterSelectsFirstOption = false)
         {
             while (true)
             {
                 ConsoleKeyInfo key = Console.ReadKey(true);
                 if (int.TryParse(key.KeyChar.ToString(), out int res) && res >= min && res <= max)
                     return res;
+                else if (enterSelectsFirstOption && key.Key == ConsoleKey.Enter)
+                {
+                    return min;
+                }
             }
         }
 
-        public static bool GetSelectionEscapable(int min, int max, out int selection)
+        public static bool GetSelectionEscapable(int min, int max, out int selection, bool enterSelectsFirstOption = false)
         {
             while (true)
             {
@@ -100,6 +104,11 @@ namespace SheridanInstallNET
                 {
                     selection = 0;
                     return false;
+                }
+                else if (enterSelectsFirstOption && key.Key == ConsoleKey.Enter)
+                {
+                    selection = min;
+                    return true;
                 }
             }
         }
@@ -278,6 +287,16 @@ namespace SheridanInstallNET
                 if (key.Key == ConsoleKey.Y) return true;
                 if (key.Key == ConsoleKey.N) return false;
             }
+        }
+
+        /// <summary>
+        /// Clears the screen, shows the message, then waits for input
+        /// </summary>
+        public static void ClearShowMessageAndWait(string message)
+        {
+            Clear();
+            WriteLine(message);
+            WaitForInput();
         }
     }
 }

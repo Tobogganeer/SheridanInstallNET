@@ -17,6 +17,7 @@ namespace SheridanInstallNET
 
         public static string MasterPassword;
         public static SavedInfo CurrentInfo { get; private set; }
+        public static List<LoginFile> LoginFiles { get; private set; }
         public static List<LoginCategory> LoginCategories { get; private set; }
 
         static void Main(string[] args)
@@ -39,7 +40,7 @@ namespace SheridanInstallNET
             InOut.WriteLine("[3] - Settings");
             InOut.WriteLine("[4] - Exit");
 
-            int selection = InOut.GetSelection(1, 4);
+            int selection = InOut.GetSelection(1, 4, true);
 
             if (selection == 1)
                 Login();
@@ -66,6 +67,20 @@ namespace SheridanInstallNET
                 MainLoop();
 
             ClearAndWriteHeader("Login to services");
+
+            // No login files - ask them to make some
+            if (LoginFiles.Count == 0)
+            {
+                InOut.WriteLine("No Login files found - import/create some in Settings.");
+                InOut.WaitForInput();
+                Settings();
+                return;
+            }
+
+            InOut.WriteLine("[1] - Log in to selected services");
+            InOut.Space();
+
+            InOut.WriteLine("=== SERVICES ===");
         }
 
         static void EditInfo()
@@ -81,32 +96,36 @@ namespace SheridanInstallNET
             ClearAndWriteHeader("Settings");
 
             InOut.WriteLine("[1] - Create empty Login file");
-            InOut.WriteLine("[2] - Open Login file folder");
-            InOut.WriteLine("[3] - Reload Login files");
-            InOut.WriteLine("[4] - Delete all saved emails and passwords");
+            InOut.WriteLine("[2] - Create default Login files");
+            InOut.WriteLine("[3] - Open Login file folder");
+            InOut.WriteLine("[4] - Reload Login files");
+            InOut.WriteLine("[5] - Delete all saved emails and passwords");
             if (LoggedIn)
-                InOut.WriteLine("[5] - Log out");
+                InOut.WriteLine("[6] - Log out");
 
             if (!InOut.GetSelectionEscapable(1, LoggedIn ? 5 : 4, out int selection))
                 return;
 
             if (selection == 1)
             {
-                LoginFile.CreateEmpty(LoginFileFolder, "SampleLogin");
-                InOut.Clear();
-                InOut.WriteLine("Created SampleLogin.login");
-                InOut.WaitForInput();
+                DefaultLoginFiles.CreateEmpty(LoginFileFolder, "SampleLogin");
+                InOut.ClearShowMessageAndWait("Created SampleLogin.login");
                 Settings();
                 return;
             }
             else if (selection == 2)
-                System.Diagnostics.Process.Start("explorer.exe", Path.Combine(RootDirectory, LoginFileFolder));
+            {
+                DefaultLoginFiles.CreateDefault(LoginFileFolder);
+            }
             else if (selection == 3)
+                System.Diagnostics.Process.Start("explorer.exe", Path.Combine(RootDirectory, LoginFileFolder));
+            else if (selection == 4)
             {
                 LoadLoginFiles();
+                InOut.ClearShowMessageAndWait($"Loaded {LoginFiles?.Count} Login files.");
                 Settings();
             }
-            else if (selection == 4)
+            else if (selection == 5)
             {
                 if (InOut.Confirm("Delete all saved emails and passwords? Cannot be undone."))
                 {
@@ -114,9 +133,8 @@ namespace SheridanInstallNET
                     SavedInfo.DeleteFile();
                     CurrentInfo = null;
                     MasterPassword = null;
-                    InOut.Clear();
-                    InOut.WriteLine("Deleted saved info.");
-                    InOut.WaitForInput();
+
+                    InOut.ClearShowMessageAndWait("Deleted saved info.");
                     Settings();
                     return;
                 }
@@ -126,7 +144,7 @@ namespace SheridanInstallNET
                     Settings();
                 }
             }
-            else if (selection == 5)
+            else if (selection == 6)
             {
                 if (InOut.Confirm("Log out?"))
                 {
@@ -204,8 +222,8 @@ namespace SheridanInstallNET
 
         static void LoadLoginFiles()
         {
-            List<LoginFile> loginFiles = LoginFile.LoadAll(LoginFileFolder);
-            LoginCategories = LoginCategory.GetCategories(loginFiles);
+            LoginFiles = LoginFile.LoadAll(LoginFileFolder);
+            LoginCategories = LoginCategory.GetCategories(LoginFiles);
         }
     }
 }
@@ -235,6 +253,7 @@ Layout:
 
 - Settings
   - Create empty Login file
+  - Create default Login files
   - Open Login folder
   - Reload Login files
   - Delete all saved data
