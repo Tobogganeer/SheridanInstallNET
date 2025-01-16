@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace SheridanInstallNET
         private const int SaltSize = 64;
         private const int PassHashSize = 256;
 
-        public readonly byte[] Data;
+        public byte[] Data { get; private set; }
         public readonly ArraySegment<byte> MasterSalt;
         public readonly ArraySegment<byte> MasterHash;
 
@@ -60,6 +61,57 @@ namespace SheridanInstallNET
             Entries = new Dictionary<string, Entry>(Data[SaltSize + PassHashSize]);
         }
 
+        public void ChangeMasterPassword(string newMasterPassword)
+        {
+            byte[] salt = Encryption.CreateSalt(SaltSize);
+            byte[] masterPasswordHash = Encryption.ComputeSha256Hash(newMasterPassword, salt);
+            Array.Copy(salt, Data, SaltSize);
+            Array.Copy(masterPasswordHash, 0, Data, SaltSize, PassHashSize);
+        }
+
+        /// <summary>
+        /// Gets the current entries, ready to be written to disk. Changes the <paramref name="masterPassword"/> if necessary.
+        /// </summary>
+        /// <param name="masterPassword"></param>
+        /// <returns></returns>
+        public byte[] GetBinaryData(string masterPassword)
+        {
+            if (!CorrectPassword(masterPassword))
+                ChangeMasterPassword(masterPassword);
+
+            List<byte[]> binaryNames = new List<byte[]>(Entries.Count);
+            List<byte[]> emailBytes = new List<byte[]>(Entries.Count);
+            List<byte[]> passwordBytes = new List<byte[]>(Entries.Count);
+
+            foreach (Entry entry in Entries.Values)
+            {
+                if (string.IsNullOrEmpty(entry.name))
+                    continue;
+
+                binaryNames.Add(entry.GetNameBytes());
+                emailBytes.Add(entry.GetEmailBytes(masterPassword));
+                passwordBytes.Add(entry.GetPasswordBytes(masterPassword));
+            }
+
+            List<byte> outputData = new List<byte>();
+            // Add master password and salt
+            outputData.AddRange(new ArraySegment<byte>(Data, 0, SaltSize + PassHashSize));
+            outputData.Add((byte)binaryNames.Count);
+            for (int i = 0; i < binaryNames.Count; i++)
+            {
+                outputData.Add((byte)binaryNames[i].Length);
+                outputData.AddRange(binaryNames[i]);
+
+                outputData.AddRange(BitConverter.GetBytes(emailBytes[i].Length));
+                outputData.AddRange(emailBytes[i]);
+
+                outputData.AddRange(BitConverter.GetBytes(passwordBytes[i].Length));
+                outputData.AddRange(passwordBytes[i]);
+            }
+
+            return outputData.ToArray();
+        }
+
 
         public bool CorrectPassword(string candidate)
         {
@@ -84,10 +136,28 @@ namespace SheridanInstallNET
                 return;
 
             byte numServicesInData = Data[SaltSize + PassHashSize];
-            int currentOffset = 0;
+            int readPosition = SaltSize + PassHashSize + 1;
             for (int i = 0; i < numServicesInData; i++)
             {
+                byte nameLength = Data[readPosition++];
+                string name = Encoding.UTF8.GetString(Data, readPosition, nameLength);
+                readPosition += nameLength;
 
+                int emailByteCount = BitConverter.ToInt32(Data, readPosition);
+                readPosition += 4;
+
+                byte[] emailBytes = new byte[emailByteCount];
+                for (int j = 0; j < emailByteCount; j++, readPosition++)
+                    emailBytes[j] = Data[readPosition];
+
+                int passwordByteCount = BitConverter.ToInt32(Data, readPosition);
+                readPosition += 4;
+
+                byte[] passwordBytes = new byte[passwordByteCount];
+                for (int j = 0; j < passwordByteCount; j++, readPosition++)
+                    passwordBytes[j] = Data[readPosition];
+
+                Entries.Add(name, Entry.CreateFromBytes(masterPassword, name, emailBytes, passwordBytes));
             }
         }
 
@@ -113,14 +183,37 @@ namespace SheridanInstallNET
 
         public class Entry
         {
+            public string name;
             public string email;
             public string password;
 
-            public Entry(string email, string password)
+            public Entry(string name, string email, string password)
             {
                 this.email = email;
                 this.password = password;
             }
+
+            public static Entry CreateFromBytes(string masterPassword, string name, byte[] emailBytes, byte[] passwordBytes)
+            {
+                try
+                {
+                    string email = Encoding.UTF8.GetString(Encryption.SimpleDecryptWithPassword(emailBytes, masterPassword));
+                    string password = Encoding.UTF8.GetString(Encryption.SimpleDecryptWithPassword(passwordBytes, masterPassword));
+                    return new Entry(name, email, password);
+                }
+                catch
+                {
+                    return new Entry(name, null, null);
+                }
+            }
+
+            public byte[] GetNameBytes() => Encoding.UTF8.GetBytes(name);
+
+            public byte[] GetEmailBytes(string masterPassword)
+                => Encryption.SimpleEncryptWithPassword(Encoding.UTF8.GetBytes(email), masterPassword);
+
+            public byte[] GetPasswordBytes(string masterPassword)
+                => Encryption.SimpleEncryptWithPassword(Encoding.UTF8.GetBytes(password), masterPassword);
         }
     }
 }
