@@ -76,7 +76,7 @@ namespace SheridanInstallNET
         /// <returns></returns>
         public byte[] GetBinaryData(string masterPassword)
         {
-            if (!CorrectPassword(masterPassword))
+            if (!IsCorrectPassword(masterPassword))
                 ChangeMasterPassword(masterPassword);
 
             List<byte[]> binaryNames = new List<byte[]>(Entries.Count);
@@ -113,7 +113,7 @@ namespace SheridanInstallNET
         }
 
 
-        public bool CorrectPassword(string candidate)
+        public bool IsCorrectPassword(string candidate)
         {
             byte[] candidateHash = Encryption.ComputeSha256Hash(candidate, MasterSalt.ToArray());
 
@@ -132,7 +132,7 @@ namespace SheridanInstallNET
 
         public void FillEntriesFromData(string masterPassword)
         {
-            if (!CorrectPassword(masterPassword))
+            if (!IsCorrectPassword(masterPassword))
                 return;
 
             byte numServicesInData = Data[SaltSize + PassHashSize];
@@ -169,6 +169,9 @@ namespace SheridanInstallNET
 
         public static SavedInfo Load()
         {
+            if (!Exists())
+                return null;
+
             string filePath = Path.Combine(Program.RootDirectory, DataFile);
             byte[] data = File.ReadAllBytes(filePath);
             if (data.Length < SaltSize + PassHashSize + 1)
@@ -179,6 +182,17 @@ namespace SheridanInstallNET
             }
 
             return new SavedInfo(data);
+        }
+
+        /// <summary>
+        /// Deletes the saved data from the disk. Cannot be undone.
+        /// </summary>
+        public static void DeleteFile()
+        {
+            if (!Exists())
+                return;
+
+            File.Delete(Path.Combine(Program.RootDirectory, DataFile));
         }
 
         public class Entry
