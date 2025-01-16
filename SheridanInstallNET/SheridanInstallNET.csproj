@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefaultLoginFiles.cs" />
     <Compile Include="Encryption.cs" />
     <Compile Include="INIParser.cs" />
     <Compile Include="InOut.cs" />
