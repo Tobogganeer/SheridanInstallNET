@@ -26,11 +26,14 @@ typeenter hi :3
 
 ### Commands
 # type [text] - types the given text
-# typeenter [text] - types and then hits enter
 # enter - hits enter
 # tab - hits tab (useful for navigating between controls)
 # tab [amount] - hits tab a bunch of times
 # tabenter - hits tab and then enter
+# typeenter [text] - types and then hits enter
+
+# email - types the email for this account
+# password - types the password for this account
 
 # open [program] - opens the given program
 # wait [seconds] - delays operation for the given amount of time
