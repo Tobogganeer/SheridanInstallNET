@@ -12,7 +12,7 @@ namespace SheridanInstallNET
     {
         private static readonly string DataFile = "db";
         private const int SaltSize = 64;
-        private const int PassHashSize = 256;
+        private const int PassHashSize = 32; // 256 bits
 
         public byte[] Data { get; private set; }
         public readonly ArraySegment<byte> MasterSalt;
@@ -182,6 +182,17 @@ namespace SheridanInstallNET
             }
 
             return new SavedInfo(data);
+        }
+
+        /// <summary>
+        /// Writes the entries to disk using the given password
+        /// </summary>
+        /// <param name="masterPassword"></param>
+        public void Save(string masterPassword)
+        {
+            string filePath = Path.Combine(Program.RootDirectory, DataFile);
+            byte[] data = GetBinaryData(masterPassword);
+            File.WriteAllBytes(filePath, data);
         }
 
         /// <summary>

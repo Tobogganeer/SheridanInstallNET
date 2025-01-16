@@ -84,7 +84,7 @@ typeenter hi :3
             {
                 Directory.CreateDirectory(directory);
                 InOut.WriteLine($"{directory} not found.");
-                return null;
+                return new List<LoginFile>();
             }
 
             List<LoginFile> files = new List<LoginFile>();
@@ -128,11 +128,17 @@ typeenter hi :3
         /// <returns></returns>
         public static List<LoginCategory> GetCategories(List<LoginFile> unsortedFiles)
         {
+            // Return empty list of categories
+            if (unsortedFiles.Count == 0)
+                return new List<LoginCategory>();
+
+            // Create dictionary for easy adding
             Dictionary<string, LoginCategory> categories = new Dictionary<string, LoginCategory>
             {
                 { string.Empty, new LoginCategory(string.Empty, new List<LoginFile>()) }
             };
 
+            // Add files to corresponding categories
             foreach (LoginFile file in unsortedFiles)
             {
                 string category = string.IsNullOrWhiteSpace(file.Category) ? string.Empty : file.Category;
@@ -144,9 +150,10 @@ typeenter hi :3
                 categories[category].files.Add(file);
             }
 
+            // Sort each individual category by order
             foreach (LoginCategory category in categories.Values)
             {
-                // Sort each individual category by order
+                
                 category.files.Sort((a, b) => a.Order.CompareTo(b.Order));
             }
 
