@@ -81,7 +81,22 @@ namespace SheridanInstallNET
             InOut.Space();
 
             InOut.WriteLine("=== SERVICES ===");
+
+            DisplayLogins();
         }
+
+        static void DisplayLogins()
+        {
+            int currentNumber = 2; // Logging in is 1
+
+            LoginCategory uncategorized = LoginCategories.Find((cat) => cat.name == string.Empty);
+            // Check if we have uncategorized Login files
+            if (uncategorized != null)
+            {
+                
+            }
+        }
+
 
         static void EditInfo()
         {
