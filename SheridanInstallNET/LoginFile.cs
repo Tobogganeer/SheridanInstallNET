@@ -28,6 +28,14 @@ Category=
 Order=
 
 
+
+# Commands go here...
+goto slate.sheridancollege.ca
+ctrl t
+typeenter hi :3
+
+
+
 ### Commands
 # type [text] - types the given text
 # typeenter [text] - types and then hits enter
@@ -45,11 +53,6 @@ Order=
 # shift [key] - presses shift + key
 # up - presses up arrow key
 # down - presses down arrow key
-
-# Commands go here...
-goto slate.sheridancollege.ca
-ctrl t
-typeenter hi :3
 ";
 
 
@@ -104,6 +107,53 @@ typeenter hi :3
                 Directory.CreateDirectory(directory);
 
             File.WriteAllText(Path.Combine(directory, name + "." + Extension), BlankFile);
+        }
+    }
+
+    public class LoginCategory
+    {
+        public string name;
+        public List<LoginFile> files;
+
+        public LoginCategory(string name, List<LoginFile> files)
+        {
+            this.name = name;
+            this.files = files;
+        }
+
+        /// <summary>
+        /// Takes in unsorted files and returns them, sorted by order. Categories are sorted alphabetically.
+        /// </summary>
+        /// <param name="unsortedFiles">A list of unsorted files, typically loaded from disk</param>
+        /// <returns></returns>
+        public static List<LoginCategory> GetCategories(List<LoginFile> unsortedFiles)
+        {
+            Dictionary<string, LoginCategory> categories = new Dictionary<string, LoginCategory>
+            {
+                { string.Empty, new LoginCategory(string.Empty, new List<LoginFile>()) }
+            };
+
+            foreach (LoginFile file in unsortedFiles)
+            {
+                string category = string.IsNullOrWhiteSpace(file.Category) ? string.Empty : file.Category;
+
+                // Check if we have a collection of this category yet
+                if (!categories.ContainsKey(category))
+                    categories.Add(category, new LoginCategory(category, new List<LoginFile>()));
+
+                categories[category].files.Add(file);
+            }
+
+            foreach (LoginCategory category in categories.Values)
+            {
+                // Sort each individual category by order
+                category.files.Sort((a, b) => a.Order.CompareTo(b.Order));
+            }
+
+            // Sort the categories themselves alphabetically
+            List<LoginCategory> categoryList = categories.Values.ToList();
+            categoryList.Sort((a, b) => a.name.CompareTo(b.name));
+            return categoryList;
         }
     }
 }
