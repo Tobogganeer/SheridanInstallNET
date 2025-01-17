@@ -29,8 +29,7 @@ namespace SheridanInstallNET
 # up - presses up arrow key
 # down - presses down arrow key";
 
-        private static readonly string BlankFile = $@"
-### Config
+        private static readonly string BlankFile = $@"### Config
 # Category is used to group files for easy enabling/disabling
 Category=
 # Lower orders are loaded first (services with same order loaded alphabetically)
@@ -40,7 +39,7 @@ EnabledByDefault=true
 
 
 
-# Commands go here...
+### Commands go here...
 goto slate.sheridancollege.ca
 ctrl t
 typeenter hi :3
@@ -49,14 +48,87 @@ typeenter hi :3
 {CommandHelpText}
 ";
 
+        private static readonly string DefaultFileHeader = @"### === {0} - Default Login file === ###
+### === {1} === ###
+
+";
+
+        private static readonly string FileTemplate = @"### Config
+Category={0}
+Order={1}
+EnabledByDefault={2}
+
+### Commands
+{3}";
+
+
+        static readonly string Default_Slate = @"goto slate.sheridancollege.ca
+wait 3.0
+tab 2
+enter
+wait 2.0
+
+email
+enter
+wait 2.5
+password
+enter
+
+# Done - wait for 2fa";
+        static readonly string Default_VisualStudio_Sheridan = @"open visual studio 2022
+# Click sign in and wait for it to open
+tab 2
+enter
+wait 4.0
+
+";
+        static readonly string Default_VisualStudio_Personal = @"";
+        static readonly string Default_Github = @"# Download github desktop and wait
+goto https://central.github.com/deployments/desktop/desktop/latest/win32
+wait 5.0
+
+win r
+typeenter downloads
+wait 2.0
+# Select file
+up
+down
+enter
+
+# Give it time to install
+wait 10.0
+enter
+wait 3.5
+
+# Sign in
+email
+tab
+password
+enter
+
+# Done - wait for 2fa
+
+";
+        static readonly string Default_Unity = @"";
+        static readonly string Default_Miro = @"";
+
+
         public static void CreateEmpty(string directory, string name)
         {
             LoginFile.Create(directory, name, BlankFile);
         }
 
-        internal static void CreateDefault(string directory)
+        public static void CreateDefault(string directory)
         {
             throw new NotImplementedException("TODO later");
+        }
+
+        static string GetDefaultFileText(string name, string commands, string description,
+            string category, int order, bool enabledByDefault)
+        {
+            string header = string.Format(DefaultFileHeader, name, description);
+            string body = string.Format(FileTemplate, category, order, enabledByDefault, commands);
+            return header + body;
         }
     }
 }
