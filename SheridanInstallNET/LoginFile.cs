@@ -86,6 +86,7 @@ namespace SheridanInstallNET
     {
         public string name;
         public List<LoginFile> files;
+        public bool AllDisabled => files.All((file) => !file.enabled);
 
         public LoginCategory(string name, List<LoginFile> files)
         {

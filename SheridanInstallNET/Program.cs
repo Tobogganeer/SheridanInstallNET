@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.IO;
 using System.Security.Cryptography;
+using System.Diagnostics;
 
 namespace SheridanInstallNET
 {
@@ -96,18 +97,24 @@ namespace SheridanInstallNET
         {
             int currentNumber = 2; // Logging in is 1
 
-            List<Action> callbacks = new List<Action>();
+            List<Action> callbacks = new List<Action>
+            {
+                LoginToServices
+            };
 
+            // TODO: Better order display
             LoginCategory uncategorized = LoginCategories.Find((cat) => cat.name == string.Empty);
             // Check if we have uncategorized Login files
             if (uncategorized != null)
             {
-                // TODO: Better order display
                 foreach (LoginFile login in uncategorized.files)
                 {
                     DisplayEnabledText($"[{currentNumber++}] - {login.Name}", login.enabled);
                     // Callback to toggle it
-                    callbacks.Add(() => login.enabled = !login.enabled);
+                    callbacks.Add(() => {
+                        login.enabled = !login.enabled;
+                        Login(); // Display again
+                    });
                 }
             }
 
@@ -117,14 +124,26 @@ namespace SheridanInstallNET
                 if (category.name == string.Empty)
                     continue;
 
-                //bool allDisabled
-
-                InOut.WriteLine($"{currentNumber++}] - {category.name}");
+                // Grey out category if all services are disabled
+                DisplayEnabledText($"{currentNumber++}] - {category.name}", category.AllDisabled);
                 foreach (LoginFile login in category.files)
-                {
-                    DisplayEnabledText("  - ", login.enabled);
-                }
+                    DisplayEnabledText("    --- ", login.enabled);
+
+                // Pressing on this service will go into it
+                callbacks.Add(() => EditCategoryServices(category));
             }
+
+            // Go back to main menu
+            if (!InOut.GetSelectionEscapable(1, currentNumber - 1, out int selection, true))
+                return;
+
+            // Call the appropriate callback (selection starts at 1, array starts at 0)
+            callbacks[selection - 1]();
+        }
+
+        static void LoginToServices()
+        {
+            throw new NotImplementedException();
         }
 
         static void DisplayEnabledText(string text, bool enabled)
@@ -138,6 +157,26 @@ namespace SheridanInstallNET
 
             InOut.WriteLine(text);
             Console.ResetColor();
+        }
+
+        static void EditCategoryServices(LoginCategory category)
+        {
+            ClearAndWriteHeader("Edit enabled services from " + category.name);
+
+            InOut.WriteLine($"=== {category.name} ===");
+            for (int i = 0; i < category.files.Count; i++)
+                DisplayEnabledText($"[{i + 1}] - {category.files[i].Name}", category.files[i].enabled);
+
+            if (!InOut.GetSelectionEscapable(1, category.files.Count, out int selection, false))
+            {
+                Login(); // Go back to login page if we click escape
+                return;
+            }
+
+            // Turn this service on/off
+            category.files[selection - 1].enabled = !category.files[selection - 1].enabled;
+            // Stay on this menu
+            EditCategoryServices(category);
         }
 
 
