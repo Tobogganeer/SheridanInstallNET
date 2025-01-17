@@ -8,23 +8,7 @@ namespace SheridanInstallNET
 {
     public class DefaultLoginFiles
     {
-        private static readonly string BlankFile = @"
-### Config
-# Category is used to group files for easy enabling/disabling
-Category=
-# Lower orders are loaded first
-Order=
-
-
-
-# Commands go here...
-goto slate.sheridancollege.ca
-ctrl t
-typeenter hi :3
-
-
-
-### Commands
+        private static readonly string CommandHelpText = @"### Commands
 # type [text] - types the given text
 # enter - hits enter
 # tab - hits tab (useful for navigating between controls)
@@ -43,7 +27,26 @@ typeenter hi :3
 # ctrl [key] - presses ctrl + key
 # shift [key] - presses shift + key
 # up - presses up arrow key
-# down - presses down arrow key
+# down - presses down arrow key";
+
+        private static readonly string BlankFile = $@"
+### Config
+# Category is used to group files for easy enabling/disabling
+Category=
+# Lower orders are loaded first (services with same order loaded alphabetically)
+Order=0
+# Controls whether this service will be logged into by default
+EnabledByDefault=true
+
+
+
+# Commands go here...
+goto slate.sheridancollege.ca
+ctrl t
+typeenter hi :3
+
+
+{CommandHelpText}
 ";
 
         public static void CreateEmpty(string directory, string name)

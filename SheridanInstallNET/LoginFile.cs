@@ -15,10 +15,12 @@ namespace SheridanInstallNET
 
         public int Order;
         public int CurrentLine { get; private set; }
+        public bool EnabledByDefault;
 
         private static readonly string Extension = "login";
         private static readonly string CategoryKey = "Category";
         private static readonly string OrderKey = "Order";
+        private static readonly string EnabledByDefaultKey = "EnabledByDefault";
 
 
         public LoginFile(string[] lines, string path)
@@ -28,6 +30,7 @@ namespace SheridanInstallNET
 
             INIParser.TryGetValue(Lines, CategoryKey, out Category);
             INIParser.TryGetInt(Lines, OrderKey, out Order, -1);
+            INIParser.TryGetBool(Lines, EnabledByDefaultKey, out EnabledByDefault, true);
         }
 
 
