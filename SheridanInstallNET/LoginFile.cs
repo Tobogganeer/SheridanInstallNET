@@ -17,6 +17,8 @@ namespace SheridanInstallNET
         public int CurrentLine { get; private set; }
         public bool EnabledByDefault;
 
+        public bool enabled;
+
         private static readonly string Extension = "login";
         private static readonly string CategoryKey = "Category";
         private static readonly string OrderKey = "Order";
@@ -31,6 +33,8 @@ namespace SheridanInstallNET
             INIParser.TryGetValue(Lines, CategoryKey, out Category);
             INIParser.TryGetInt(Lines, OrderKey, out Order, -1);
             INIParser.TryGetBool(Lines, EnabledByDefaultKey, out EnabledByDefault, true);
+
+            enabled = EnabledByDefault;
         }
 
 

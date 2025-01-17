@@ -10,6 +10,8 @@ namespace SheridanInstallNET
 {
     public class Program
     {
+        const int VERSION = 1;
+
         public static string RootDirectory { get; private set; }
         public static readonly string LoginFileFolder = "Logins";
         static bool Exit = false;
@@ -33,7 +35,7 @@ namespace SheridanInstallNET
 
         static void MainLoop()
         {
-            ClearAndWriteHeader("Sheridan Install");
+            ClearAndWriteHeader($"Sheridan Install (v{VERSION}");
 
             InOut.WriteLine("[1] - Login to services");
             InOut.WriteLine("[2] - View/Edit saved information");
@@ -43,7 +45,12 @@ namespace SheridanInstallNET
             int selection = InOut.GetSelection(1, 4, true);
 
             if (selection == 1)
+            {
+                // Reset 'enabled states' when we get to this menu
+                foreach (LoginFile login in LoginFiles)
+                    login.enabled = login.EnabledByDefault;
                 Login();
+            }
             else if (selection == 2)
                 EditInfo();
             else if (selection == 3)
@@ -89,12 +96,48 @@ namespace SheridanInstallNET
         {
             int currentNumber = 2; // Logging in is 1
 
+            List<Action> callbacks = new List<Action>();
+
             LoginCategory uncategorized = LoginCategories.Find((cat) => cat.name == string.Empty);
             // Check if we have uncategorized Login files
             if (uncategorized != null)
             {
-                
+                // TODO: Better order display
+                foreach (LoginFile login in uncategorized.files)
+                {
+                    DisplayEnabledText($"[{currentNumber++}] - {login.Name}", login.enabled);
+                    // Callback to toggle it
+                    callbacks.Add(() => login.enabled = !login.enabled);
+                }
             }
+
+            foreach (LoginCategory category in LoginCategories)
+            {
+                // We already did the uncategorized ones
+                if (category.name == string.Empty)
+                    continue;
+
+                //bool allDisabled
+
+                InOut.WriteLine($"{currentNumber++}] - {category.name}");
+                foreach (LoginFile login in category.files)
+                {
+                    DisplayEnabledText("  - ", login.enabled);
+                }
+            }
+        }
+
+        static void DisplayEnabledText(string text, bool enabled)
+        {
+            if (!enabled)
+            {
+                // Make it gray if disabled
+                Console.ForegroundColor = ConsoleColor.Gray;
+                text += " (will not be logged in to)";
+            }
+
+            InOut.WriteLine(text);
+            Console.ResetColor();
         }
 
 
