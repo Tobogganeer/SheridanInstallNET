@@ -36,7 +36,7 @@ namespace SheridanInstallNET
 
         static void MainLoop()
         {
-            ClearAndWriteHeader($"Sheridan Install (v{VERSION}");
+            ClearAndWriteHeader($"Sheridan Install (v{VERSION})");
 
             InOut.WriteLine("[1] - Login to services");
             InOut.WriteLine("[2] - View/Edit saved information");
@@ -151,7 +151,7 @@ namespace SheridanInstallNET
             if (!enabled)
             {
                 // Make it gray if disabled
-                Console.BackgroundColor = ConsoleColor.Gray;
+                //Console.BackgroundColor = ConsoleColor.Gray;
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 text += " (will not be logged in to)";
             }
@@ -200,7 +200,67 @@ namespace SheridanInstallNET
                 MainLoop();
 
             ClearAndWriteHeader("Saved Information");
+
+            InOut.WriteLine("[1] - Master Password");
+
+            // No login files/entries
+            if (CurrentInfo.CurrentEntryCount == 0)
+            {
+                InOut.WriteLine("No entries. Please add a Login file to add data.");
+                InOut.Space();
+                InOut.WriteLine("[2] - Settings");
+                if (!InOut.GetSelectionEscapable(1, 2, out int selection))
+                    return;
+                if (selection == 1)
+                    EditMasterPassword();
+                else
+                    Settings();
+            }
+
+            int currentNumber = 2; // Editing master password is 1
+
+            List<Action> callbacks = new List<Action>
+            {
+                EditMasterPassword
+            };
+
+            foreach (KeyValuePair<string, SavedInfo.Entry> pair in CurrentInfo.Entries)
+            {
+                InOut.WriteLine($"[{currentNumber++}] - {pair.Key}");
+                if (!string.IsNullOrEmpty(pair.Value.email))    
+                    InOut.WriteLine($"  - Email: {new string('*', pair.Value.email.Length)}");
+                else
+                    InOut.WriteLine($"  - Email: (no email assigned)");
+
+                if (!string.IsNullOrEmpty(pair.Value.password))
+                    InOut.WriteLine($"  - Password: {new string('*', pair.Value.password.Length)}");
+                else
+                    InOut.WriteLine($"  - Password: (no password assigned)");
+            }
+
+            /*
+            
+            - Master password
+                - View master password
+                - Change master password
+            - [List all logins/services]
+                - Show name, email *** password ***
+                - On selection
+                  - [if info empty] Set email/set password
+                  - View email
+                  - Change email
+                  - View password
+                  - Change password
+
+            */
         }
+
+        static void EditMasterPassword()
+        {
+
+        }
+
+
 
         static void Settings()
         {
@@ -310,6 +370,7 @@ namespace SheridanInstallNET
                 // Correct password
                 LoggedIn = true;
                 CurrentInfo.FillEntriesFromData(MasterPassword);
+                EnsureLoginsArePresentInSavedInfo();
                 return true;
             }
 
@@ -338,6 +399,19 @@ namespace SheridanInstallNET
         {
             LoginFiles = LoginFile.LoadAll(LoginFileFolder);
             LoginCategories = LoginCategory.GetCategories(LoginFiles);
+            EnsureLoginsArePresentInSavedInfo();
+        }
+
+        static void EnsureLoginsArePresentInSavedInfo()
+        {
+            if (CurrentInfo == null || LoginFiles == null)
+                return;
+
+            foreach (LoginFile login in LoginFiles)
+            {
+                if (!CurrentInfo.Entries.ContainsKey(login.Name))
+                    CurrentInfo.Entries.Add(login.Name, new SavedInfo.Entry(login.Name, string.Empty, string.Empty));
+            }
         }
     }
 }
