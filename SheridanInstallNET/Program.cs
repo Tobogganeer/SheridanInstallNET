@@ -125,9 +125,9 @@ namespace SheridanInstallNET
                     continue;
 
                 // Grey out category if all services are disabled
-                DisplayEnabledText($"{currentNumber++}] - {category.name}", category.AllDisabled);
+                DisplayEnabledText($"[{currentNumber++}] - {category.name}", !category.AllDisabled);
                 foreach (LoginFile login in category.files)
-                    DisplayEnabledText("    --- ", login.enabled);
+                    DisplayEnabledText($"    --- {login.Name}", login.enabled);
 
                 // Pressing on this service will go into it
                 callbacks.Add(() => EditCategoryServices(category));
@@ -151,7 +151,8 @@ namespace SheridanInstallNET
             if (!enabled)
             {
                 // Make it gray if disabled
-                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.BackgroundColor = ConsoleColor.Gray;
+                Console.ForegroundColor = ConsoleColor.DarkGray;
                 text += " (will not be logged in to)";
             }
 
@@ -164,17 +165,30 @@ namespace SheridanInstallNET
             ClearAndWriteHeader("Edit enabled services from " + category.name);
 
             InOut.WriteLine($"=== {category.name} ===");
-            for (int i = 0; i < category.files.Count; i++)
-                DisplayEnabledText($"[{i + 1}] - {category.files[i].Name}", category.files[i].enabled);
+            InOut.WriteLine("[1] - Toggle all");
+            InOut.Space();
 
-            if (!InOut.GetSelectionEscapable(1, category.files.Count, out int selection, false))
+            for (int i = 0; i < category.files.Count; i++)
+                DisplayEnabledText($"[{i + 2}] - {category.files[i].Name}", category.files[i].enabled);
+
+            if (!InOut.GetSelectionEscapable(1, category.files.Count + 1, out int selection, false))
             {
                 Login(); // Go back to login page if we click escape
                 return;
             }
 
-            // Turn this service on/off
-            category.files[selection - 1].enabled = !category.files[selection - 1].enabled;
+            if (selection == 1)
+            {
+                bool allDisabled = category.AllDisabled;
+                foreach (LoginFile login in category.files)
+                    login.enabled = allDisabled;
+            }
+            else
+            {
+                // Turn this service on/off
+                category.files[selection - 2].enabled = !category.files[selection - 2].enabled;
+            }
+            
             // Stay on this menu
             EditCategoryServices(category);
         }
@@ -200,7 +214,7 @@ namespace SheridanInstallNET
             if (LoggedIn)
                 InOut.WriteLine("[6] - Log out");
 
-            if (!InOut.GetSelectionEscapable(1, LoggedIn ? 5 : 4, out int selection))
+            if (!InOut.GetSelectionEscapable(1, LoggedIn ? 6 : 5, out int selection))
                 return;
 
             if (selection == 1)
@@ -208,14 +222,18 @@ namespace SheridanInstallNET
                 DefaultLoginFiles.CreateEmpty(LoginFileFolder, "SampleLogin");
                 InOut.ClearShowMessageAndWait("Created SampleLogin.login");
                 Settings();
-                return;
             }
             else if (selection == 2)
             {
                 DefaultLoginFiles.CreateDefault(LoginFileFolder);
+                InOut.ClearShowMessageAndWait("Created default login files");
+                Settings();
             }
             else if (selection == 3)
-                System.Diagnostics.Process.Start("explorer.exe", Path.Combine(RootDirectory, LoginFileFolder));
+            {
+                Process.Start("explorer.exe", Path.Combine(RootDirectory, LoginFileFolder));
+                Settings();
+            }
             else if (selection == 4)
             {
                 LoadLoginFiles();
@@ -233,7 +251,6 @@ namespace SheridanInstallNET
 
                     InOut.ClearShowMessageAndWait("Deleted saved info.");
                     Settings();
-                    return;
                 }
                 else
                 {
