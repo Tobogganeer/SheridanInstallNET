@@ -81,8 +81,25 @@ tab 2
 enter
 wait 4.0
 
+tabenter
+wait 4.5
+email
+enter
+wait 2.0
+password
+enter
+
+# Done - wait for 2fa
 ";
-        static readonly string Default_VisualStudio_Personal = @"";
+        static readonly string Default_VisualStudio_Personal = @"open visual studio 2022
+# Click sign in and wait for it to open
+tab 2
+enter
+wait 4.0
+
+enter
+
+# Done - wait for 2fa";
         static readonly string Default_Github = @"# Download github desktop and wait
 goto https://central.github.com/deployments/desktop/desktop/latest/win32
 wait 5.0
@@ -109,8 +126,38 @@ enter
 # Done - wait for 2fa
 
 ";
-        static readonly string Default_Unity = @"";
-        static readonly string Default_Miro = @"";
+        static readonly string Default_Unity = @"open unity hub
+wait 8.0
+tabenter
+# Wait for cookies window and close it
+wait 5.0
+tab 3
+enter
+
+# Go to username input
+tab 7
+email
+tab
+password
+tab 3
+enter
+wait 4.5
+
+# Wait for 'redirect to hub'
+tab 2
+enter";
+        static readonly string Default_Miro = @"goto miro.com/login
+# Wait for cookies window and close it
+wait 5.0
+tab 2
+enter
+wait 1.0
+
+tab 12
+email
+tab
+password
+enter";
 
 
         public static void CreateEmpty(string directory, string name)
@@ -120,7 +167,20 @@ enter
 
         public static void CreateDefault(string directory)
         {
-            throw new NotImplementedException("TODO later");
+            CreateTemplate(directory, "Slate", Default_Slate, "Logs into SLATE", null, 0, true);
+            CreateTemplate(directory, "Visual Studio (Personal Email)", Default_VisualStudio_Sheridan,
+                "Logs into Visual Studio using a personal email", "Programming", 2, true);
+            CreateTemplate(directory, "Visual Studio (Sheridan Email)", Default_VisualStudio_Personal,
+                "Logs into Visual Studio using your sheridan email", "Programming", 2, false);
+            CreateTemplate(directory, "Github", Default_Github, "Downloads Github Desktop and logs in", "Programming", 1, true);
+            CreateTemplate(directory, "Unity", Default_Unity, "Logs into Unity Hub", "Programming", 3, true);
+            CreateTemplate(directory, "Miro", Default_Miro, "Logs into Miro", null, 10, false);
+        }
+
+        static void CreateTemplate(string directory, string name, string commands, string description,
+            string category, int order, bool enabledByDefault)
+        {
+            LoginFile.Create(directory, name, GetDefaultFileText(name, commands, description, category, order, enabledByDefault));
         }
 
         static string GetDefaultFileText(string name, string commands, string description,
