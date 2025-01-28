@@ -202,16 +202,17 @@ namespace SheridanInstallNET
             ClearAndWriteHeader("Saved Information");
 
             InOut.WriteLine("[1] - Master Password");
+            InOut.Space();
 
             // No login files/entries
             if (CurrentInfo.CurrentEntryCount == 0)
             {
+                // Give option to go to settings to create login files
                 InOut.WriteLine("No entries. Please add a Login file to add data.");
-                InOut.Space();
                 InOut.WriteLine("[2] - Settings");
-                if (!InOut.GetSelectionEscapable(1, 2, out int selection))
+                if (!InOut.GetSelectionEscapable(1, 2, out int lilSelection))
                     return;
-                if (selection == 1)
+                if (lilSelection == 1)
                     EditMasterPassword();
                 else
                     Settings();
@@ -230,13 +231,18 @@ namespace SheridanInstallNET
                 if (!string.IsNullOrEmpty(pair.Value.email))    
                     InOut.WriteLine($"  - Email: {new string('*', pair.Value.email.Length)}");
                 else
-                    InOut.WriteLine($"  - Email: (no email assigned)");
+                    InOut.WriteLine($"  - No Email assigned");
 
                 if (!string.IsNullOrEmpty(pair.Value.password))
                     InOut.WriteLine($"  - Password: {new string('*', pair.Value.password.Length)}");
                 else
-                    InOut.WriteLine($"  - Password: (no password assigned)");
+                    InOut.WriteLine($"  - No Password assigned");
             }
+
+            if (!InOut.GetSelectionEscapable(1, currentNumber - 1, out int selection))
+                return;
+
+            callbacks[selection - 1]();
 
             /*
             
@@ -393,6 +399,7 @@ namespace SheridanInstallNET
 
             LoggedIn = true;
             CurrentInfo = new SavedInfo(MasterPassword);
+            LoadLoginFiles();
         }
 
         static void LoadLoginFiles()

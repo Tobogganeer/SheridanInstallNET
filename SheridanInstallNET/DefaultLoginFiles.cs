@@ -81,12 +81,7 @@ tab 2
 enter
 wait 4.0
 
-tabenter
-wait 4.5
-email
-enter
-wait 2.0
-password
+# Click 'use logged in account'
 enter
 
 # Done - wait for 2fa
@@ -97,7 +92,12 @@ tab 2
 enter
 wait 4.0
 
-enter
+# Click 'use another account'
+tabenter
+wait 2.0
+email
+wait 4.0
+password
 
 # Done - wait for 2fa";
         static readonly string Default_Github = @"# Download github desktop and wait
