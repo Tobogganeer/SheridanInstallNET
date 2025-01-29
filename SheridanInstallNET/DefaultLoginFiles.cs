@@ -82,7 +82,7 @@ enter
 wait 4.0
 
 # Click 'use logged in account'
-enter
+tabenter
 
 # Done - wait for 2fa
 ";
@@ -93,7 +93,8 @@ enter
 wait 4.0
 
 # Click 'use another account'
-tabenter
+tab 2
+enter
 wait 2.0
 email
 wait 4.0
