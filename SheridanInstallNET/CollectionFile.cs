@@ -10,7 +10,7 @@ namespace SheridanInstallNET
     public class CollectionFile
     {
         public string Name;
-        public List<LoginFile> Services;
+        public HashSet<LoginFile> Services;
 
         private static readonly string Extension = "coll";
 
@@ -18,7 +18,7 @@ namespace SheridanInstallNET
         public CollectionFile(string[] lines, string path)
         {
             Name = Path.GetFileNameWithoutExtension(path);
-            Services = new List<LoginFile>(lines.Length);
+            Services = new HashSet<LoginFile>(lines.Length);
 
             // Loop through each string
             foreach (string login in lines)

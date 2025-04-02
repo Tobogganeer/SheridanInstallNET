@@ -81,34 +81,35 @@ namespace SheridanInstallNET
             if (!VerifyLogin())
                 MainLoop();
 
-            ClearAndWriteHeader("HOME > Login to services");
+            ClearAndWriteHeader("LOGIN > Login to services");
 
             // No login files - ask them to make some
             if (LoginFiles.Count == 0)
             {
                 InOut.WriteLine("No Login files found - import/create some in Settings.");
-                InOut.WaitForInput();
+                InOut.WaitForInput("Press any key to go to SETTINGS...");
                 Settings();
                 return;
             }
 
             InOut.WriteLine("[1] - Log in to selected services");
             InOut.Space();
+            InOut.WriteLine("[2] - Select specific services");
 
-            InOut.WriteLine("=== SERVICES ===");
-
-            DisplayLogins();
+            DisplayCollections();
         }
 
-        static void DisplayLogins()
+        static void DisplayCollections()
         {
-            int currentNumber = 2; // Logging in is 1
+            int currentNumber = 3; // Logging in is 1, editing specific logins is 2
 
             List<Action> callbacks = new List<Action>
             {
-                LoginToServices
+                LoginToServices,
+                DisplayLogins,
             };
 
+            /*
             // TODO: Better order display
             LoginCategory uncategorized = LoginCategories.Find((cat) => cat.name == string.Empty);
             // Check if we have uncategorized Login files
@@ -139,6 +140,29 @@ namespace SheridanInstallNET
                 // Pressing on this service will go into it
                 callbacks.Add(() => EditCategoryServices(category));
             }
+            */
+
+            foreach (CollectionFile collection in CollectionFiles)
+            {
+                // Check if the selected services perfectly match the collection (iff)
+                IEnumerable<LoginFile> enabledLogins = LoginFiles.Where((file) => file.enabled);
+                IEnumerable<LoginFile> loginsInBoth = collection.Services.Where((colLogin) => enabledLogins.Contains(colLogin));
+                bool specificCollectionSelected = loginsInBoth.Count() == collection.Services.Count &&
+                    collection.Services.Count == enabledLogins.Count();
+
+                if (!specificCollectionSelected)
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                InOut.WriteLine($"[{currentNumber++}] - Select services from '{collection.Name}'\n    --- {GetDisplayStringOfLogins(collection.Services.ToList())}");
+                Console.ResetColor();
+                callbacks.Add(() => SelectCollection(collection));
+            }
+
+            // Write what is enabled so far
+            InOut.WriteLine("=== SERVICES ===");
+            foreach (LoginFile login in LoginFiles)
+            {
+                DisplayEnabledText(" - " + login.Name, login.enabled);
+            }
 
             // Go back to main menu
             if (!InOut.GetSelectionEscapable(1, currentNumber - 1, out int selection, true))
@@ -146,6 +170,55 @@ namespace SheridanInstallNET
 
             // Call the appropriate callback (selection starts at 1, array starts at 0)
             callbacks[selection - 1]();
+        }
+
+        static void DisplayLogins()
+        {
+            ClearAndWriteHeader("HOME > Login to services > Select specific services");
+
+            int currentNumber = 1;
+
+            List<Action> callbacks = new List<Action>();
+
+            foreach (LoginFile login in LoginFiles)
+            {
+                DisplayEnabledText($"[{currentNumber++}] - {login.Name}", login.enabled);
+                // Callback to toggle it
+                callbacks.Add(() => {
+                    login.enabled = !login.enabled;
+                    DisplayLogins(); // Display again
+                });
+            }
+
+            // Go back to Login menu
+            if (!InOut.GetSelectionEscapable(1, currentNumber - 1, out int selection, true))
+            {
+                Login();
+                return;
+            }
+
+            // Call the appropriate callback (selection starts at 1, array starts at 0)
+            callbacks[selection - 1]();
+        }
+
+        static string GetDisplayStringOfLogins(List<LoginFile> logins)
+        {
+            if (logins == null || logins.Count == 0)
+                return "none";
+
+            string str = "";
+            for (int i = 0; i < logins.Count - 1; i++)
+                str += logins[i].Name + ", ";
+
+            return str + logins[logins.Count - 1].Name;
+        }
+
+        static void SelectCollection(CollectionFile collection)
+        {
+            // Only enable services from collection
+            LoginFiles.ForEach((login) => login.enabled = collection.Services.Contains(login));
+            // Display menu again
+            Login();
         }
 
         static void LoginToServices()
@@ -167,6 +240,7 @@ namespace SheridanInstallNET
             Console.ResetColor();
         }
 
+        /*
         static void EditCategoryServices(LoginCategory category)
         {
             ClearAndWriteHeader("LOGIN > Edit enabled services from " + category.name);
@@ -199,6 +273,7 @@ namespace SheridanInstallNET
             // Stay on this menu
             EditCategoryServices(category);
         }
+        */
 
 
         static void EditInfo()
@@ -442,9 +517,7 @@ Layout:
     - [select services]
     - [Next page]
     - Login to [#] services
-  - Select collections
-    - [select collections]
-    - [Next page]
+  - [Select collections]
   - Login to all services
   - Login to selected services (list services below)
 

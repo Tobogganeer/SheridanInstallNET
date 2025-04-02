@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CollectionFile.cs" />
+    <Compile Include="DefaultCollectionFiles.cs" />
     <Compile Include="DefaultLoginFiles.cs" />
     <Compile Include="Encryption.cs" />
     <Compile Include="INIParser.cs" />

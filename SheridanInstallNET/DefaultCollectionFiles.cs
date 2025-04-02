@@ -13,6 +13,7 @@ namespace SheridanInstallNET
 
 ";
 
+        static readonly string Default_Slate = "Slate";
 
         static readonly string Default_Programming = @"Github
 Slate
@@ -26,6 +27,7 @@ Unity";
 
         public static void CreateDefault(string directory)
         {
+            CreateTemplate(directory, "SLATE", "Just SLATE", Default_Slate);
             CreateTemplate(directory, "Programming", "Logs into all tools for programming", Default_Programming);
             CreateTemplate(directory, "Unity Basic", "Logins into Unity, Github and Slate", Default_SlateUnityGithub);
         }
