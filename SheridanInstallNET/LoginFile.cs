@@ -10,7 +10,7 @@ namespace SheridanInstallNET
     public class LoginFile
     {
         public string Name;
-        public string Category;
+        //public string Category;
         public List<string> Lines;
 
         public int Order;
@@ -20,7 +20,7 @@ namespace SheridanInstallNET
         public bool enabled;
 
         private static readonly string Extension = "login";
-        private static readonly string CategoryKey = "Category";
+        //private static readonly string CategoryKey = "Category";
         private static readonly string OrderKey = "Order";
         private static readonly string EnabledByDefaultKey = "EnabledByDefault";
 
@@ -30,7 +30,7 @@ namespace SheridanInstallNET
             Name = Path.GetFileNameWithoutExtension(path);
             Lines = new List<string>(lines);
 
-            INIParser.TryGetValue(Lines, CategoryKey, out Category);
+            //INIParser.TryGetValue(Lines, CategoryKey, out Category);
             INIParser.TryGetInt(Lines, OrderKey, out Order, -1);
             INIParser.TryGetBool(Lines, EnabledByDefaultKey, out EnabledByDefault, true);
 
@@ -82,6 +82,7 @@ namespace SheridanInstallNET
         }
     }
 
+    /*
     public class LoginCategory
     {
         public string name;
@@ -136,4 +137,5 @@ namespace SheridanInstallNET
             return categoryList;
         }
     }
+    */
 }

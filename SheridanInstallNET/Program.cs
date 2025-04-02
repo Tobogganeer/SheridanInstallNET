@@ -15,19 +15,22 @@ namespace SheridanInstallNET
 
         public static string RootDirectory { get; private set; }
         public static readonly string LoginFileFolder = "Logins";
+        public static readonly string CollectionsFileFolder = "Collections";
         static bool Exit = false;
         static bool LoggedIn = false;
 
         public static string MasterPassword;
         public static SavedInfo CurrentInfo { get; private set; }
         public static List<LoginFile> LoginFiles { get; private set; }
-        public static List<LoginCategory> LoginCategories { get; private set; }
+        public static List<CollectionFile> CollectionFiles { get; private set; }
+        //public static List<LoginCategory> LoginCategories { get; private set; }
 
         static void Main(string[] args)
         {
             RootDirectory = Directory.GetCurrentDirectory();
             // Make sure logins folder exists
             Directory.CreateDirectory(Path.Combine(RootDirectory, LoginFileFolder));
+            Directory.CreateDirectory(Path.Combine(RootDirectory, CollectionsFileFolder));
             LoadLoginFiles();
 
             while (!Exit)
@@ -410,7 +413,8 @@ namespace SheridanInstallNET
         static void LoadLoginFiles()
         {
             LoginFiles = LoginFile.LoadAll(LoginFileFolder);
-            LoginCategories = LoginCategory.GetCategories(LoginFiles);
+            CollectionFiles = CollectionFile.LoadAll(CollectionsFileFolder);
+            //LoginCategories = LoginCategory.GetCategories(LoginFiles);
             EnsureLoginsArePresentInSavedInfo();
         }
 
@@ -440,8 +444,8 @@ Layout:
   - Select collections
     - [select collections]
     - [Next page]
-    - Login to [#] services
   - Login to all services
+  - Login to selected services (list services below)
 
 - Edit info
  Gate by asking for master password

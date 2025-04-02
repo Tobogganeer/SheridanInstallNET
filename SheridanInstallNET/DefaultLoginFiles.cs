@@ -54,12 +54,11 @@ typeenter hi :3
 ";
 
         private static readonly string FileTemplate = @"### Config
-Category={0}
-Order={1}
-EnabledByDefault={2}
+Order={0}
+EnabledByDefault={1}
 
 ### Commands
-{3}";
+{2}";
 
 
         static readonly string Default_Slate = @"goto slate.sheridancollege.ca
@@ -168,27 +167,27 @@ enter";
 
         public static void CreateDefault(string directory)
         {
-            CreateTemplate(directory, "Slate", Default_Slate, "Logs into SLATE", null, 0, true);
+            CreateTemplate(directory, "Slate", Default_Slate, "Logs into SLATE", 0, true);
             CreateTemplate(directory, "Visual Studio (Personal Email)", Default_VisualStudio_Sheridan,
-                "Logs into Visual Studio using a personal email", "Programming", 2, true);
+                "Logs into Visual Studio using a personal email", 2, true);
             CreateTemplate(directory, "Visual Studio (Sheridan Email)", Default_VisualStudio_Personal,
-                "Logs into Visual Studio using your sheridan email", "Programming", 2, false);
-            CreateTemplate(directory, "Github", Default_Github, "Downloads Github Desktop and logs in", "Programming", 1, true);
-            CreateTemplate(directory, "Unity", Default_Unity, "Logs into Unity Hub", "Programming", 3, true);
-            CreateTemplate(directory, "Miro", Default_Miro, "Logs into Miro", null, 10, false);
+                "Logs into Visual Studio using your sheridan email", 2, false);
+            CreateTemplate(directory, "Github", Default_Github, "Downloads Github Desktop and logs in", 1, true);
+            CreateTemplate(directory, "Unity", Default_Unity, "Logs into Unity Hub", 3, true);
+            CreateTemplate(directory, "Miro", Default_Miro, "Logs into Miro", 10, false);
         }
 
         static void CreateTemplate(string directory, string name, string commands, string description,
-            string category, int order, bool enabledByDefault)
+            /*string category,*/ int order, bool enabledByDefault)
         {
-            LoginFile.Create(directory, name, GetDefaultFileText(name, commands, description, category, order, enabledByDefault));
+            LoginFile.Create(directory, name, GetDefaultFileText(name, commands, description, /*category,*/ order, enabledByDefault));
         }
 
         static string GetDefaultFileText(string name, string commands, string description,
-            string category, int order, bool enabledByDefault)
+            /*string category,*/ int order, bool enabledByDefault)
         {
             string header = string.Format(DefaultFileHeader, name, description);
-            string body = string.Format(FileTemplate, category, order, enabledByDefault, commands);
+            string body = string.Format(FileTemplate, /*category,*/ order, enabledByDefault, commands);
             return header + body;
         }
     }
