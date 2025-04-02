@@ -299,6 +299,7 @@ namespace SheridanInstallNET
             else if (selection == 2)
             {
                 DefaultLoginFiles.CreateDefault(LoginFileFolder);
+                DefaultCollectionFiles.CreateDefault(CollectionsFileFolder);
                 LoadLoginFiles();
                 InOut.ClearShowMessageAndWait("Created default login files");
                 Settings();
