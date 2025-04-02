@@ -63,8 +63,12 @@ namespace SheridanInstallNET
         static void ClearAndWriteHeader(string title)
         {
             InOut.Clear();
-            InOut.WriteLine($"{title} - Number keys to navigate, escape to go back.");
+            InOut.Write(title);
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            InOut.WriteLine("  - Number keys to navigate, escape to go back.");
+            Console.ForegroundColor = LoggedIn ? ConsoleColor.DarkGreen : ConsoleColor.DarkRed;
             InOut.WriteLine(LoggedIn ? "LOGGED IN" : "NOT LOGGED IN");
+            Console.ResetColor();
             InOut.Space();
         }
 
@@ -74,7 +78,7 @@ namespace SheridanInstallNET
             if (!VerifyLogin())
                 MainLoop();
 
-            ClearAndWriteHeader("Login to services");
+            ClearAndWriteHeader("HOME > Login to services");
 
             // No login files - ask them to make some
             if (LoginFiles.Count == 0)
@@ -162,7 +166,7 @@ namespace SheridanInstallNET
 
         static void EditCategoryServices(LoginCategory category)
         {
-            ClearAndWriteHeader("Edit enabled services from " + category.name);
+            ClearAndWriteHeader("LOGIN > Edit enabled services from " + category.name);
 
             InOut.WriteLine($"=== {category.name} ===");
             InOut.WriteLine("[1] - Toggle all");
@@ -199,7 +203,7 @@ namespace SheridanInstallNET
             if (!VerifyLogin())
                 MainLoop();
 
-            ClearAndWriteHeader("Saved Information");
+            ClearAndWriteHeader("INFO > Saved Information");
 
             InOut.WriteLine("[1] - Master Password");
             InOut.Space();
@@ -270,7 +274,7 @@ namespace SheridanInstallNET
 
         static void Settings()
         {
-            ClearAndWriteHeader("Settings");
+            ClearAndWriteHeader("SETTINGS");
 
             InOut.WriteLine("[1] - Create empty Login file");
             InOut.WriteLine("[2] - Create default Login files");
@@ -292,6 +296,7 @@ namespace SheridanInstallNET
             else if (selection == 2)
             {
                 DefaultLoginFiles.CreateDefault(LoginFileFolder);
+                LoadLoginFiles();
                 InOut.ClearShowMessageAndWait("Created default login files");
                 Settings();
             }
@@ -428,9 +433,15 @@ namespace SheridanInstallNET
 Layout:
 - Login
  Gate by asking for master password
-  - [select categories]
-  - [Next page]
-  - Login to [#] services
+  - Select specific services
+    - [select services]
+    - [Next page]
+    - Login to [#] services
+  - Select collections
+    - [select collections]
+    - [Next page]
+    - Login to [#] services
+  - Login to all services
 
 - Edit info
  Gate by asking for master password
